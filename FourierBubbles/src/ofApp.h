@@ -21,13 +21,13 @@ class ofApp : public ofBaseApp{
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
     
-    ofPolyline _BaseLine;
-    ofPolyline _DynamicLine;
+    ofPolyline _BaseLine; // 基准线
+    ofPolyline _DynamicLine; // 动态线
     
-    vector<ofFloatImage> _Amps;
-    vector<ofFloatImage> _Frqs;
-    vector<ofFloatImage> _Phzs;
+    vector<ofFloatImage> _Amps; // 振幅
+    vector<ofFloatImage> _Frqs; // 频率
+    vector<ofFloatImage> _Phzs; // 相位
     
-    ofTrueTypeFont _Font;
-    string _Text;
+    ofTrueTypeFont _Font; // 字体
+    string _Text; // 要显示的文本
 };

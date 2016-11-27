@@ -5,27 +5,32 @@
 
 //--------------------------------------------------------------
 void ofApp::setup(){
-    
+     // 限制帧率最大60帧/秒
     ofSetFrameRate(60.0f);
     
+	// 设定矢量场的初始状态
     ofFloatImage I;
-    I.load("VField.jpg");
-    
+    I.load("VField.jpg");    
     _VField.allocate(ofGetWidth(),ofGetHeight(),GL_RGBA32F);
     _VField.begin();
     ofClear(0,0,0,0);
     I.draw(0,0,_VField.getWidth(),_VField.getHeight());
     _VField.end();
     
+	// 彩色画布初始化
     _Canvas.allocate(ofGetWidth(),ofGetHeight(),GL_RGBA);
     _Canvas.begin();
     ofClear(255,255,255,255);
     _Canvas.end();
     
+	// 初始化笔刷相关内容
+	// 初始化笔刷图像
     _BrushImg.allocate(64,64,OF_IMAGE_COLOR_ALPHA);
+	// 初始化笔刷参数
     _BrushOn.set("BrushOn",true);
     _BrScale.set("Scale",1.0f,0.2f,5.0f);
     _BrCentric.set("Centric",1.0f,-10.0f,10.0f);
+	// 为这个参数添加回调函数
     _BrCentric.addListener(this,&ofApp::BrParamChange);
     _BrYXRatio.set("BrYXRatio",1.0f,-1.0f,1.0f);
     _BrYXRatio.addListener(this,&ofApp::BrParamChange);
@@ -42,6 +47,7 @@ void ofApp::setup(){
     _BrPreview.set("Preview",true);
     _BrPreviewSize.set("BrushPreviewSize",140.0f,30.0f,320.0f);
     _BrushControl.setName("Brush");
+	// 上述参数都加入参数组，之后再将参数组加入图形界面
     _BrushControl.add(_BrushOn);
     _BrushControl.add(_BrScale);
     _BrushControl.add(_BrCentric);
@@ -53,7 +59,10 @@ void ofApp::setup(){
     _BrushControl.add(_BrRandomBias);
     _BrushControl.add(_BrPreview);
     _BrushControl.add(_BrPreviewSize);
+	// 更新笔刷内容
+	updateBrushImg();
     
+	// 移动粒子相关内容初始化
     _AddParticle.set("AddingParticles",false);
     _Radius.set("Radius",10.0f,3.0f,50.0f);
     _Color.set("Color",ofColor(255,0,0,50),ofColor(0,0,0,0),ofColor(255,255,255,255));
@@ -67,6 +76,7 @@ void ofApp::setup(){
     _ParticleControl.add(_Speed);
     _ParticleControl.add(_ClearParticles);
     
+	// 矢量场动态化处理的相关内容初始化
     _AddDynamic.set("AddDynamic",false);
     _DynamicType.set("DynamicType",0,0,1);
     _DynamicRadius.set("DynamicRadius",10.0f,5.0f,100.0f);
@@ -79,6 +89,7 @@ void ofApp::setup(){
     _Dynamics.add(_DynamicSpeed);
     _Dynamics.add(_ClearDynamics);
     
+	// 矢量场显示效果初始化
     _bDrawVField.set("DrawVecField",true);
     _VecDispRes.set("VecFieldDisplayRes",20,10,50);
     _VecDispColor.set("VecDispColor",
@@ -90,6 +101,7 @@ void ofApp::setup(){
     _DisplayControl.add(_VecDispRes);
     _DisplayControl.add(_VecDispColor);
     
+	// 图形界面初始化
     GUI.setup();
     GUI.setName("Control Panel");
     //GUI.setShape(ofGetWidth()-200, 0, 200, 400);
@@ -103,62 +115,79 @@ void ofApp::setup(){
     
     screenw = ofGetWidth();
     screenh = ofGetHeight();
-    
-	updateBrushImg();
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
+	// 将矢量场_VField的内容逐个像素的读取到_VFPx中
     _VField.getTexture().readToPixels(_VFPx);
     
     float dt = ofGetLastFrameTime();
-    if(ofGetMousePressed() && _BrushOn)
+    
+	// 笔刷绘制到矢量场
+	if(ofGetMousePressed() && _BrushOn)
     {
         //cout << "brushDraw:" << endl;
         BrushDrawToVecField();
     }
     
-    
+    // 矢量场动态处理
     for(int i=0;i<_FDynamics.size();i++)
     {
         _FDynamics[i]->update(dt,_VFPx,_VField);
     }
     
+	// 粒子移动
     for(int i=0;i<_Particles.size();i++)
     {
         _Particles[i]->updatePosition(dt,_VFPx);
     }
+
+	// 粒子绘制到画布
+	_Canvas.begin();
+	for (int i = 0; i<_Particles.size(); i++)
+	{
+		_Particles[i]->draw();
+	}
+	_Canvas.end();
     
 
 }
 
 //--------------------------------------------------------------
 void ofApp::draw(){   
+
+	// 显示画布
+	_Canvas.draw(0, 0, ofGetWidth(), ofGetHeight());
     
+	// 显示矢量场
     if(_bDrawVField)
     {
         drawVField();
     }
     
-    
+    // 显示动态化处理
     for(int i=0;i<_FDynamics.size();i++)
     {
         _FDynamics[i]->draw();
     }
     
-    
+    // 显示粒子
     drawParticles(true);
     
+	// 显示笔刷预览
     if(_BrPreview)
     {
         drawBrushPreview();
     }
     
+	// 显示笔刷形状
     if(_BrushOn)
     {
         drawBrushShape();
     }
     
+	// 显示界面
     if(bDrawGUI)
         GUI.draw();
 
@@ -171,6 +200,8 @@ void ofApp::keyPressed(int key){
 
 //--------------------------------------------------------------
 void ofApp::keyReleased(int key){
+
+	// F1切换界面的显示
     if(OF_KEY_F1==key)
     {
         bDrawGUI = !bDrawGUI;
@@ -195,6 +226,8 @@ void ofApp::mousePressed(int x, int y, int button){
 
 //--------------------------------------------------------------
 void ofApp::mouseReleased(int x, int y, int button){
+
+	// 添加粒子或矢量场动态化处理源
     if(_AddParticle)
     {
         ofPtr<DrawingParticle> newPt;
@@ -246,6 +279,8 @@ void ofApp::BrParamChange(float &v)
 {
     updateBrushImg();
 }
+
+// 再左上角显示笔刷预览图像
 void ofApp::drawBrushPreview()
 {
     ofRectangle R(
@@ -273,6 +308,8 @@ void ofApp::drawBrushPreview()
     ofPopStyle();
     
 }
+
+// 按笔刷参数，更新笔刷内容
 void ofApp::updateBrushImg()
 {
     int w,h;
@@ -319,6 +356,7 @@ void ofApp::updateBrushImg()
     _BrushImg.update();
 }
 
+// 笔刷内容绘制到矢量场
 void ofApp::BrushDrawToVecField()
 {
     float dt = ofGetLastFrameTime();
@@ -338,6 +376,8 @@ void ofApp::BrushDrawToVecField()
     ofPopMatrix();
     _VField.end();
 }
+
+// 显示笔刷形状
 void ofApp::drawBrushShape()
 {
     ofPushStyle();
@@ -352,6 +392,7 @@ void ofApp::drawBrushShape()
 
 }
 
+// 显示所有粒子
 void ofApp::drawParticles(bool bVisualAid)
 {
     for(int i=0;i<_Particles.size();i++)
@@ -365,6 +406,7 @@ void ofApp::drawParticles(bool bVisualAid)
     }
 }
 
+// 清空所有粒子
 void ofApp::clearParticles(bool& bClear)
 {
     if(bClear)
@@ -374,6 +416,7 @@ void ofApp::clearParticles(bool& bClear)
     }
 }
 
+// 清空动态化场
 void ofApp::clearDynamics(bool& bClear)
 {
     if(bClear)
@@ -382,6 +425,8 @@ void ofApp::clearDynamics(bool& bClear)
         _FDynamics.clear();
     }
 }
+
+// 画出矢量场
 void ofApp::drawVField()
 {
     ofPushStyle();

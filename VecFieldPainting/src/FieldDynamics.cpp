@@ -6,17 +6,16 @@
 //
 //
 
-#include "FieldDynamics.hpp"
+#include "FieldDynamics.hpp" // 本类的头文件
 
-
+// 构造函数：初始化位置和大小
 FieldDynamics::FieldDynamics(ofVec2f pos, float radius):
 _radius(radius),
 _pos(pos)
-{
-    
-}
+{}
 
 float FieldDynamics::getAffectStrength(ofVec2f _target)
+//离中心位置越远，处理强度越小，且虽距离增加，线性降低
 {
     ofVec2f offset = _target-_pos;
     float dist = offset.length();
@@ -24,6 +23,7 @@ float FieldDynamics::getAffectStrength(ofVec2f _target)
     return affect;
 }
 
+//默认显示效果：画一个半透明黑色圆形，显示作用范围
 void FieldDynamics::draw()
 {
     ofPushStyle();

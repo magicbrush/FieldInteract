@@ -13,18 +13,21 @@
 #include "FieldDynamics.hpp"
 
 class FD_Rotation: public FieldDynamics
+	// 继承自FieldDynamics
 {
 public:
+	// 构造函数
     FD_Rotation(float radius, ofVec2f pos, float speed);
-    void update(
+    // 更新：随时间变化，旋转区域内矢量场的内容
+	void update(
         float dt,
         ofFloatPixels& VF,
-        ofFbo& Field) override;
+        ofFbo& Field) override; // 对虚函数的重写
     
 private:
-    float _speed;
+    float _speed; // 速度
     
-    ofFloatImage _img;
+    ofFloatImage _img; 
     
 };
 

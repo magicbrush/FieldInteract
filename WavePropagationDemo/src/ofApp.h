@@ -22,19 +22,21 @@ class ofApp : public ofBaseApp{
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
     
+	// 控制参数
+	// _coef: 振动系数
     ofParameter<float> _coef;
+	// 下面两个控制显示效果
     ofParameter<float> _dispOffset;
     ofParameter<float> _dispScale;
     ofParameterGroup _Control;
-    ofxPanel _GUI;
+    ofxPanel _GUI;    
     
+    ofFloatImage _FCoef; // 障碍物
+    ofFloatImage _FWave; // 波动场（灰度值）
+    ofFloatImage _FSpd; // 振动速度
     
-    ofFloatImage _FCoef;
-    ofFloatImage _FWave;
-    ofFloatImage _FSpd;
+    ofFloatImage _FWaveDisp; // 显示出来的图像
     
-    ofFloatImage _FWaveDisp;
-    
-    int screenW,screenH;
+    int screenW,screenH; // 屏幕参数
 		
 };
